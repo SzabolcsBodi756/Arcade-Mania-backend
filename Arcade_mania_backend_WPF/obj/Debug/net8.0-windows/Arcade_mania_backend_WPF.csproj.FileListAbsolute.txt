@@ -57,3 +57,11 @@ C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF
 C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\obj\Debug\net8.0-windows\Arcade_mania_backend_WPF.pdb
 C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\obj\Debug\net8.0-windows\Arcade_mania_backend_WPF.genruntimeconfig.cache
 C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\obj\Debug\net8.0-windows\ref\Arcade_mania_backend_WPF.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.IdentityModel.Logging.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.IdentityModel.Protocols.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\Microsoft.IdentityModel.Tokens.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_WPF\bin\Debug\net8.0-windows\System.IdentityModel.Tokens.Jwt.dll
