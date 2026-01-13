@@ -96,6 +96,22 @@
   },
   {
     "ContainingType": "Arcade_mania_backend_webAPI.Controllers.UsersController",
+    "Method": "AdminLogin",
+    "RelativePath": "api/Users/admin/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Arcade_mania_backend_webAPI.Models.Dtos.Auth.UserLoginDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Arcade_mania_backend_webAPI.Controllers.UsersController",
     "Method": "Login",
     "RelativePath": "api/Users/login",
     "HttpMethod": "POST",
@@ -105,6 +121,32 @@
       {
         "Name": "dto",
         "Type": "Arcade_mania_backend_webAPI.Models.Dtos.Auth.UserLoginDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Arcade_mania_backend_webAPI.Controllers.UsersController",
+    "Method": "GetMyScores",
+    "RelativePath": "api/Users/me/scores",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Arcade_mania_backend_webAPI.Controllers.UsersController",
+    "Method": "UpdateMyScores",
+    "RelativePath": "api/Users/me/scores",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "scores",
+        "Type": "System.Collections.Generic.List\u00601[[Arcade_mania_backend_webAPI.Models.Dtos.Scores.GameScoreDto, Arcade_mania_backend_webAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "IsRequired": true
       }
     ],

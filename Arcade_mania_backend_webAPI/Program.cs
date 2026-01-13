@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MySql.EntityFrameworkCore.Extensions;
 using System.Text;
 
 namespace Arcade_mania_backend_webAPI
@@ -51,7 +50,11 @@ namespace Arcade_mania_backend_webAPI
                     };
                 });
 
-            builder.Services.AddAuthorization();
+            // AUTHZ: role alapú védelem
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            });
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

@@ -16,14 +16,8 @@ public partial class ArcadeManiaDatasContext : DbContext
     }
 
     public virtual DbSet<Game> Games { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
-
     public virtual DbSet<UserHighScore> UserHighScores { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-
-        => optionsBuilder.UseMySQL("server=localhost;database=arcade_mania_datas;user=root;password=");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,13 +42,21 @@ public partial class ArcadeManiaDatasContext : DbContext
             entity.HasIndex(e => e.UserName, "uq_users_user_name").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+
             entity.Property(e => e.PasswordHash)
                 .HasMaxLength(60)
                 .IsFixedLength()
                 .HasColumnName("password_hash");
+
             entity.Property(e => e.UserName)
                 .HasMaxLength(100)
                 .HasColumnName("user_name");
+
+            // ÚJ: role mező
+            entity.Property(e => e.Role)
+                .HasMaxLength(20)
+                .HasColumnName("role")
+                .HasDefaultValue("User");
         });
 
         modelBuilder.Entity<UserHighScore>(entity =>

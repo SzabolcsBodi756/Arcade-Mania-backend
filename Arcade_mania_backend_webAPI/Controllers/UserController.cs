@@ -40,6 +40,15 @@ namespace Arcade_mania_backend_webAPI.Controllers
         [HttpPost("admin-token")]
         public ActionResult GetAdminToken([FromBody] JsonElement body)
         {
+            // Opció 1 (ajánlott): kivezetjük, de nem töröljük
+            return StatusCode(410, new
+            {
+                message = "Ez az endpoint kivezetésre került. Használd: POST api/users/admin/login",
+                result = ""
+            });
+
+            // Opció 2 (ha még kell átmenetileg): kommenteld ki a fenti return-t és használd ezt:
+            /*
             try
             {
                 var expected = _config["Admin:ServiceKey"];
@@ -65,12 +74,13 @@ namespace Arcade_mania_backend_webAPI.Controllers
                     role: "Admin"
                 );
 
-                return Ok(new { message = "Admin token generated.", token, result = "" });
+                return Ok(new { message = "Admin token generated. (DEPRECATED)", token, result = "" });
             }
             catch (Exception ex)
             {
                 return StatusCode(400, new { message = ex.Message, result = "" });
             }
+            */
         }
 
         // --------------------------
@@ -98,7 +108,10 @@ namespace Arcade_mania_backend_webAPI.Controllers
                 {
                     Id = Guid.NewGuid(),
                     UserName = dto.Name,
-                    PasswordHash = EncryptProvider.AESEncrypt(dto.Password, _passwordKey)
+                    PasswordHash = EncryptProvider.AESEncrypt(dto.Password, _passwordKey),
+
+                    // ÚJ: default role
+                    Role = "User"
                 };
 
                 await _context.Users.AddAsync(user);
@@ -183,14 +196,75 @@ namespace Arcade_mania_backend_webAPI.Controllers
                     Scores = scores
                 };
 
-                // USER JWT
+                // JWT -> ROLE a DB-ből
+                var role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
+
                 var token = GenerateJwtToken(
                     subjectId: user.Id.ToString(),
                     name: user.UserName,
-                    role: "User"
+                    role: role
                 );
 
                 return StatusCode(200, new { message = "Sikeres bejelentkezés", token, result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(400, new { message = ex.Message, result = "" });
+            }
+        }
+
+        // --------------------------
+        //  ADMIN LOGIN (DB alapú)
+        //  POST: api/users/admin/login
+        // --------------------------
+        [AllowAnonymous]
+        [HttpPost("admin/login")]
+        public async Task<ActionResult> AdminLogin(UserLoginDto dto)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == dto.Name);
+
+                if (user == null)
+                {
+                    return StatusCode(401, new { message = "Hibás felhasználónév vagy jelszó.", result = "" });
+                }
+
+                string storedPlainPassword;
+                try
+                {
+                    storedPlainPassword = EncryptProvider.AESDecrypt(user.PasswordHash, _passwordKey);
+                }
+                catch
+                {
+                    return StatusCode(401, new { message = "Hibás felhasználónév vagy jelszó.", result = "" });
+                }
+
+                if (storedPlainPassword != dto.Password)
+                {
+                    return StatusCode(401, new { message = "Hibás felhasználónév vagy jelszó.", result = "" });
+                }
+
+                var role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
+
+                if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    return StatusCode(403, new { message = "Nincs admin jogosultság.", result = "" });
+                }
+
+                var token = GenerateJwtToken(
+                    subjectId: user.Id.ToString(),
+                    name: user.UserName,
+                    role: "Admin"
+                );
+
+                var result = new
+                {
+                    Id = user.Id,
+                    Name = user.UserName
+                };
+
+                return StatusCode(200, new { message = "Sikeres admin bejelentkezés", token, result });
             }
             catch (Exception ex)
             {
@@ -283,8 +357,128 @@ namespace Arcade_mania_backend_webAPI.Controllers
             }
         }
 
+
+        // ---------------------------------------------------
+        // GET: api/scores/me
+        // Bejelentkezett user saját score-jai (JWT-ből userId)
+        // ---------------------------------------------------
+        [Authorize]
+        [HttpGet("me/scores")]
+        public async Task<ActionResult> GetMyScores()
+        {
+            try
+            {
+                var userId = GetUserIdFromToken();
+                if (userId == Guid.Empty)
+                    return StatusCode(401, new { message = "Érvénytelen token.", result = "" });
+
+                var scores = await _context.UserHighScores
+                    .Where(s => s.UserId == userId)
+                    .Join(_context.Games,
+                        s => s.GameId,
+                        g => g.Id,
+                        (s, g) => new GameScoreDto
+                        {
+                            GameId = g.Id,
+                            GameName = g.Name,
+                            HighScore = (int)s.HighScore
+                        })
+                    .ToListAsync();
+
+                return Ok(new { message = "Sikeres lekérdezés", result = scores });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, result = "" });
+            }
+        }
+
+        // ---------------------------------------------------
+        // POST: api/scores/me
+        // Bejelentkezett user saját score-jainak frissítése
+        // Ugyanaz a működés, mint az admin PUT score része:
+        // - ami nincs beküldve -> törlődik
+        // - ami új -> létrejön
+        // - ami létezik -> frissül
+        //
+        // Body példa:
+        // [
+        //   { "gameId": "GUID", "gameName": "Snake", "highScore": 120 },
+        //   { "gameId": "GUID", "gameName": "Tetris", "highScore": 500 }
+        // ]
+        // (gameName opcionális, nem használjuk az íráshoz)
+        // ---------------------------------------------------
+        [Authorize]
+        [HttpPost("me/scores")]
+        public async Task<ActionResult> UpdateMyScores([FromBody] List<GameScoreDto> scores)
+        {
+            try
+            {
+                var userId = GetUserIdFromToken();
+                if (userId == Guid.Empty)
+                    return StatusCode(401, new { message = "Érvénytelen token.", result = "" });
+
+                if (scores == null)
+                    return StatusCode(400, new { message = "Hiányzó body.", result = "" });
+
+                var existingScores = await _context.UserHighScores
+                    .Where(s => s.UserId == userId)
+                    .ToListAsync();
+
+                var incomingGameIds = scores.Select(s => s.GameId).ToHashSet();
+
+                // törlés
+                var toDelete = existingScores
+                    .Where(es => !incomingGameIds.Contains(es.GameId))
+                    .ToList();
+
+                if (toDelete.Any())
+                    _context.UserHighScores.RemoveRange(toDelete);
+
+                // add/update
+                foreach (var dto in scores)
+                {
+                    var existing = existingScores.FirstOrDefault(x => x.GameId == dto.GameId);
+
+                    if (existing == null)
+                    {
+                        await _context.UserHighScores.AddAsync(new UserHighScore
+                        {
+                            UserId = userId,
+                            GameId = dto.GameId,
+                            HighScore = (uint)dto.HighScore
+                        });
+                    }
+                    else
+                    {
+                        existing.HighScore = (uint)dto.HighScore;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Pontszámok frissítve", result = "" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, result = "" });
+            }
+        }
+
+
+        private Guid GetUserIdFromToken()
+        {
+            // Nálad a tokenben: ClaimTypes.NameIdentifier = subjectId (Guid string)
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userIdString, out var userId))
+                return userId;
+
+            return Guid.Empty;
+        }
+
         // --------------------------
-        //  ADMIN (WPF auto-token -> Role=Admin)
+        //  ADMIN (Role=Admin)
         // --------------------------
         [Authorize(Roles = "Admin")]
         [HttpGet("admin")]
@@ -320,7 +514,8 @@ namespace Arcade_mania_backend_webAPI.Controllers
                             GameName = x.GameName,
                             HighScore = x.HighScore
                         })
-                        .ToList()
+                        .ToList(),
+                    Role = string.IsNullOrWhiteSpace(u.Role) ? "User" : u.Role
                 }).ToList();
 
                 return StatusCode(200, new { message = "Sikeres lekérdezés (admin)", result });
@@ -361,6 +556,7 @@ namespace Arcade_mania_backend_webAPI.Controllers
                     Id = user.Id,
                     Name = user.UserName,
                     Password = EncryptProvider.AESDecrypt(user.PasswordHash, _passwordKey),
+                    Role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role,
                     Scores = scores
                 };
 
@@ -376,6 +572,10 @@ namespace Arcade_mania_backend_webAPI.Controllers
         [HttpPost("admin")]
         public async Task<ActionResult> CreateUserAdmin(UserCreateAdminDto dto)
         {
+
+            Console.WriteLine($"DTO Role from client: '{dto.Role}'");
+
+
             try
             {
                 if (string.IsNullOrWhiteSpace(dto.Name) ||
@@ -396,7 +596,10 @@ namespace Arcade_mania_backend_webAPI.Controllers
                 {
                     Id = Guid.NewGuid(),
                     UserName = cleanName,
-                    PasswordHash = EncryptProvider.AESEncrypt(dto.Password.Trim(), _passwordKey)
+                    PasswordHash = EncryptProvider.AESEncrypt(dto.Password.Trim(), _passwordKey),
+
+                    Role = NormalizeRole(dto.Role)
+
                 };
 
                 await _context.Users.AddAsync(user);
@@ -421,6 +624,7 @@ namespace Arcade_mania_backend_webAPI.Controllers
                     Id = user.Id,
                     Name = user.UserName,
                     Password = dto.Password.Trim(),
+                    Role = NormalizeRole(dto.Role),
                     Scores = games.Select(g => new GameScoreDto
                     {
                         GameId = g.Id,
@@ -429,7 +633,8 @@ namespace Arcade_mania_backend_webAPI.Controllers
                     }).ToList()
                 };
 
-                return StatusCode(201, new { message = "Új felhasználó sikeresen létrehozva (admin).", result });
+                return StatusCode(201, new { message = "Új felhasználó sikeresen létrehozva (admin felületről).", result });
+
             }
             catch (Exception ex)
             {
@@ -505,6 +710,11 @@ namespace Arcade_mania_backend_webAPI.Controllers
                     }
                 }
 
+                if (!string.IsNullOrWhiteSpace(dto.Role))
+                {
+                    user.Role = NormalizeRole(dto.Role);
+                }
+
                 await _context.SaveChangesAsync();
 
                 return StatusCode(200, new { message = "Felhasználó és pontszámok sikeresen módosítva (admin)", result = "" });
@@ -545,9 +755,20 @@ namespace Arcade_mania_backend_webAPI.Controllers
             }
         }
 
-        // --------------------------
-        // JWT helper (egyetlen helyen)
-        // --------------------------
+
+        private static string NormalizeRole(string? role)
+        {
+            if (string.IsNullOrWhiteSpace(role)) return "User";
+            role = role.Trim();
+
+            if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase)) return "Admin";
+            if (role.Equals("User", StringComparison.OrdinalIgnoreCase)) return "User";
+
+            return "User";
+        }
+
+
+
         private string GenerateJwtToken(string subjectId, string name, string role)
         {
             var jwt = _config.GetSection("Jwt");

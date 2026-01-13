@@ -13,57 +13,64 @@ namespace Arcade_mania_backend_WPF.Services
     {
         private readonly HttpClient _httpClient;
 
+        // ha más porton fut, írd át
         private const string BaseUrl = "http://localhost:5118/api/Users";
 
-        // FONTOS: egyezzen az appsettings.json Admin:ServiceKey értékével
-        private const string AdminServiceKey = "ArcadeMania_WPF_ServiceKey_AtLeast_32_Chars!";
-
         private string? _adminToken;
+
+        public bool IsAdminLoggedIn =>
+            !string.IsNullOrWhiteSpace(_adminToken) &&
+            _httpClient.DefaultRequestHeaders.Authorization != null;
 
         public UserApiService()
         {
             _httpClient = new HttpClient();
         }
 
-        // --- AUTO TOKEN: WPF indul, és kész ---
-        private async Task EnsureAdminTokenAsync()
+        // ADMIN LOGIN (JWT)
+        public async Task<bool> AdminLoginAsync(string name, string password)
         {
-            if (!string.IsNullOrWhiteSpace(_adminToken) &&
-                _httpClient.DefaultRequestHeaders.Authorization != null)
-            {
-                return;
-            }
-
             var httpResponse = await _httpClient.PostAsJsonAsync(
-                $"{BaseUrl}/admin-token",
-                new { serviceKey = AdminServiceKey }
+                $"{BaseUrl}/admin/login",
+                new { name, password }
             );
 
             var raw = await httpResponse.Content.ReadAsStringAsync();
 
             if (!httpResponse.IsSuccessStatusCode)
-            {
-                throw new Exception($"Admin token hiba ({(int)httpResponse.StatusCode}): {raw}");
-            }
+                return false;
 
             using var doc = JsonDocument.Parse(raw);
 
             if (!doc.RootElement.TryGetProperty("token", out var tokenProp))
-                throw new Exception("Admin token válasz nem tartalmaz 'token' mezőt.");
+                return false;
 
             _adminToken = tokenProp.GetString();
 
             if (string.IsNullOrWhiteSpace(_adminToken))
-                throw new Exception("Admin token üresen érkezett.");
+                return false;
 
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _adminToken);
+
+            return true;
         }
 
-        // Összes user admin nézettel
+        public void Logout()
+        {
+            _adminToken = null;
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+
+        private void EnsureAdminLoggedIn()
+        {
+            if (!IsAdminLoggedIn)
+                throw new Exception("Admin nincs bejelentkezve. Előbb: AdminLoginAsync(name, password)");
+        }
+
         public async Task<List<UserDataAdminDto>> GetAllUsersAdminAsync()
         {
-            await EnsureAdminTokenAsync();
+            EnsureAdminLoggedIn();
 
             var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<UserDataAdminDto>>>(
                 $"{BaseUrl}/admin"
@@ -72,31 +79,9 @@ namespace Arcade_mania_backend_WPF.Services
             return response?.Result ?? new List<UserDataAdminDto>();
         }
 
-        // Új user létrehozása (POST)
-        public async Task<UserDataAdminDto?> CreateUserAdminAsync(UserCreateAdminDto dto)
-        {
-            await EnsureAdminTokenAsync();
-
-            var httpResponse = await _httpClient.PostAsJsonAsync($"{BaseUrl}/admin", dto);
-
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                var error = await httpResponse.Content.ReadAsStringAsync();
-                throw new Exception($"API hiba ({(int)httpResponse.StatusCode}): {error}");
-            }
-
-            var apiResponse =
-                await httpResponse.Content.ReadFromJsonAsync<ApiResponse<UserDataAdminDto>>(
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                );
-
-            return apiResponse?.Result;
-        }
-
-        // Egy user lekérése ID alapján (GET)
         public async Task<UserDataAdminDto?> GetUserAdminByIdAsync(Guid id)
         {
-            await EnsureAdminTokenAsync();
+            EnsureAdminLoggedIn();
 
             var response = await _httpClient.GetFromJsonAsync<ApiResponse<UserDataAdminDto>>(
                 $"{BaseUrl}/admin/{id}"
@@ -105,36 +90,49 @@ namespace Arcade_mania_backend_WPF.Services
             return response?.Result;
         }
 
-        // User + score-ok módosítása (PUT)
-        public async Task UpdateUserAdminAsync(Guid id, UserUpdateAdminDto dto)
+        public async Task<UserDataAdminDto?> CreateUserAdminAsync(UserCreateAdminDto dto)
         {
-            await EnsureAdminTokenAsync();
+            EnsureAdminLoggedIn();
 
-            var httpResponse = await _httpClient.PutAsJsonAsync($"{BaseUrl}/admin/{id}", dto);
+            var httpResponse = await _httpClient.PostAsJsonAsync($"{BaseUrl}/admin", dto);
+            var raw = await httpResponse.Content.ReadAsStringAsync();
 
             if (!httpResponse.IsSuccessStatusCode)
-            {
-                var error = await httpResponse.Content.ReadAsStringAsync();
-                throw new Exception($"API hiba ({(int)httpResponse.StatusCode}): {error}");
-            }
+                throw new Exception(raw);
+
+            var response = JsonSerializer.Deserialize<ApiResponse<UserDataAdminDto>>(
+                raw, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return response?.Result;
         }
 
-        // User törlése (DELETE)
-        public async Task DeleteUserAdminAsync(Guid id)
+        public async Task<bool> UpdateUserAdminAsync(Guid id, UserUpdateAdminDto dto)
         {
-            await EnsureAdminTokenAsync();
+            EnsureAdminLoggedIn();
 
-            var httpResponse = await _httpClient.DeleteAsync($"{BaseUrl}/admin/{id}");
+            var httpResponse = await _httpClient.PutAsJsonAsync($"{BaseUrl}/admin/{id}", dto);
+            var raw = await httpResponse.Content.ReadAsStringAsync();
 
             if (!httpResponse.IsSuccessStatusCode)
-            {
-                var error = await httpResponse.Content.ReadAsStringAsync();
-                throw new Exception($"API hiba ({(int)httpResponse.StatusCode}): {error}");
-            }
+                throw new Exception(raw);
+
+            return true;
+        }
+
+        public async Task<bool> DeleteUserAdminAsync(Guid id)
+        {
+            EnsureAdminLoggedIn();
+
+            var httpResponse = await _httpClient.DeleteAsync($"{BaseUrl}/admin/{id}");
+            var raw = await httpResponse.Content.ReadAsStringAsync();
+
+            if (!httpResponse.IsSuccessStatusCode)
+                throw new Exception(raw);
+
+            return true;
         }
     }
 
-    // WebAPI válasz wrapper: { message: "...", result: ... }
     public class ApiResponse<T>
     {
         public string? Message { get; set; }

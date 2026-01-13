@@ -10,250 +10,328 @@
         Width="1100">
 
     <Grid Margin="10">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*" />
-            <!-- Bal: részletes nézet -->
-            <ColumnDefinition Width="3*" />
-            <!-- Jobb: lista -->
-        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <!-- BAL OLDAL: részletes szerkesztő + keresés/törlés + új user -->
+        <!-- LOGIN SÁV -->
+        <GroupBox Header="Admin bejelentkezés" Grid.Row="0" Margin="0,0,0,10">
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                <TextBlock Text="Név:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox x:Name="AdminNameTextBox" Grid.Column="1" Margin="0,0,15,0"/>
 
-            <!-- Kijelölt felhasználó adatai + 3 score -->
-            <GroupBox Header="Kijelölt felhasználó (szerkesztés)" Margin="0,0,0,10">
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
+                <TextBlock Text="Jelszó:" Grid.Column="2" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <PasswordBox x:Name="AdminPasswordBox" Grid.Column="3" Margin="0,0,15,0"/>
+
+                <Button Content="Bejelentkezés"
+                        Grid.Column="4"
+                        Width="120"
+                        Click="AdminLoginButton_Click"/>
+
+                <Button Content="Kijelentkezés"
+                        Grid.Column="5"
+                        Width="120"
+                        Margin="10,0,0,0"
+                        Click="AdminLogoutButton_Click"/>
+
+                <TextBlock x:Name="LoginStatusTextBlock"
+                           Grid.Column="6"
+                           VerticalAlignment="Center"
+                           Margin="15,0,0,0"
+                           Foreground="Gray"
+                           Text="Nincs bejelentkezve"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- ADMIN TARTALOM (loginig tiltva) -->
+        <Grid x:Name="AdminContentGrid" Grid.Row="1" IsEnabled="False" Opacity="0.5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" />
+                <ColumnDefinition Width="3*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- BAL OLDAL -->
+            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+
+                <!-- Kijelölt felhasználó adatai + role + 3 score -->
+                <GroupBox Header="Kijelölt felhasználó (szerkesztés)" Margin="0,0,0,10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <!-- ID -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Név -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Jelszó -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Role -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Score 1 -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Score 2 -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Score 3 -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Gombok -->
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
                         <!-- ID -->
-                        <RowDefinition Height="Auto"/>
+                        <TextBlock Text="ID:"
+                                   Grid.Row="0"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="SelectedUserIdTextBox"
+                                 Grid.Row="0"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"
+                                 IsReadOnly="True"/>
+
                         <!-- Név -->
-                        <RowDefinition Height="Auto"/>
+                        <TextBlock Text="Név:"
+                                   Grid.Row="1"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="SelectedUserNameTextBox"
+                                 Grid.Row="1"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"/>
+
                         <!-- Jelszó -->
-                        <RowDefinition Height="Auto"/>
+                        <TextBlock Text="Jelszó:"
+                                   Grid.Row="2"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="SelectedUserPasswordTextBox"
+                                 Grid.Row="2"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"/>
+
+                        <!-- Role -->
+                        <TextBlock Text="Role:"
+                                   Grid.Row="3"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <ComboBox x:Name="SelectedUserRoleComboBox"
+                                  Grid.Row="3"
+                                  Grid.Column="1"
+                                  Margin="0,0,0,5"
+                                  SelectedIndex="0">
+                            <ComboBoxItem Content="User"/>
+                            <ComboBoxItem Content="Admin"/>
+                        </ComboBox>
+
                         <!-- Score 1 -->
-                        <RowDefinition Height="Auto"/>
+                        <TextBlock x:Name="Score1NameTextBlock"
+                                   Text=""
+                                   Grid.Row="4"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="Score1TextBox"
+                                 Grid.Row="4"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"
+                                 IsEnabled="False"/>
+
                         <!-- Score 2 -->
-                        <RowDefinition Height="Auto"/>
+                        <TextBlock x:Name="Score2NameTextBlock"
+                                   Text=""
+                                   Grid.Row="5"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="Score2TextBox"
+                                 Grid.Row="5"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"
+                                 IsEnabled="False"/>
+
                         <!-- Score 3 -->
-                        <RowDefinition Height="Auto"/>
+                        <TextBlock x:Name="Score3NameTextBlock"
+                                   Text=""
+                                   Grid.Row="6"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="Score3TextBox"
+                                 Grid.Row="6"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"
+                                 IsEnabled="False"/>
+
                         <!-- Gombok -->
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Row="7"
+                                    Grid.ColumnSpan="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,10,0,0">
+                            <Button Content="Mezők ürítése"
+                                    Width="120"
+                                    Margin="0,0,10,0"
+                                    Click="ClearFieldsButton_Click"/>
+                            <Button Content="Mentés"
+                                    Width="120"
+                                    Click="SaveUserButton_Click"/>
+                        </StackPanel>
 
-                    <!-- ID -->
-                    <TextBlock Text="ID:"
-                               Grid.Row="0"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="SelectedUserIdTextBox"
-                             Grid.Row="0"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"
-                             IsReadOnly="True"/>
+                    </Grid>
+                </GroupBox>
 
-                    <!-- Név -->
-                    <TextBlock Text="Név:"
-                               Grid.Row="1"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="SelectedUserNameTextBox"
-                             Grid.Row="1"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"/>
+                <!-- Keresés / törlés ID alapján -->
+                <GroupBox Header="Keresés / törlés ID alapján" Margin="0,0,0,10">
+                    <Grid Margin="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <!-- Jelszó -->
-                    <TextBlock Text="Jelszó:"
-                               Grid.Row="2"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="SelectedUserPasswordTextBox"
-                             Grid.Row="2"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"/>
+                        <TextBox x:Name="SearchUserIdTextBox"
+                                 Grid.Column="0"
+                                 Margin="0,0,10,0"/>
 
-                    <!-- Score 1 -->
-                    <TextBlock x:Name="Score1NameTextBlock"
-                               Text=""
-                               Grid.Row="3"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="Score1TextBox"
-                             Grid.Row="3"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"
-                             IsEnabled="False"/>
-
-                    <!-- Score 2 -->
-                    <TextBlock x:Name="Score2NameTextBlock"
-                               Text=""
-                               Grid.Row="4"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="Score2TextBox"
-                             Grid.Row="4"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"
-                             IsEnabled="False"/>
-
-                    <!-- Score 3 -->
-                    <TextBlock x:Name="Score3NameTextBlock"
-                               Text=""
-                               Grid.Row="5"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="Score3TextBox"
-                             Grid.Row="5"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"
-                             IsEnabled="False"/>
-
-                    <!-- Gombok -->
-                    <StackPanel Grid.Row="6"
-                                Grid.ColumnSpan="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                Margin="0,10,0,0">
-                        <Button Content="Mezők ürítése"
-                                Width="120"
+                        <Button Content="Lekérés"
+                                Grid.Column="1"
+                                Width="90"
                                 Margin="0,0,10,0"
-                                Click="ClearFieldsButton_Click"/>
-                        <Button Content="Mentés"
+                                Click="FetchUserByIdButton_Click"/>
+
+                        <Button Content="Törlés"
+                                Grid.Column="2"
+                                Width="90"
+                                Click="DeleteUserButton_Click"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Új felhasználó -->
+                <GroupBox Header="Új felhasználó létrehozása">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <!-- név -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- jelszó -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- role -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- létrehozás -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- frissítés -->
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Név:"
+                                   Grid.Row="0"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="NewUserNameTextBox"
+                                 Grid.Row="0"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"/>
+
+                        <TextBlock Text="Jelszó:"
+                                   Grid.Row="1"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <TextBox x:Name="NewUserPasswordTextBox"
+                                 Grid.Row="1"
+                                 Grid.Column="1"
+                                 Margin="0,0,0,5"/>
+
+                        <TextBlock Text="Role:"
+                                   Grid.Row="2"
+                                   Grid.Column="0"
+                                   Margin="0,0,5,5"
+                                   VerticalAlignment="Center"/>
+                        <ComboBox x:Name="NewUserRoleComboBox"
+                                  Grid.Row="2"
+                                  Grid.Column="1"
+                                  Margin="0,0,0,5"
+                                  SelectedIndex="0">
+                            <ComboBoxItem Content="User"/>
+                            <ComboBoxItem Content="Admin"/>
+                        </ComboBox>
+
+                        <Button Content="Létrehozás"
+                                Grid.Row="3"
+                                Grid.ColumnSpan="2"
+                                Margin="0,10,0,0"
+                                HorizontalAlignment="Right"
                                 Width="120"
-                                Click="SaveUserButton_Click"/>
-                    </StackPanel>
+                                Click="CreateUserButton_Click"/>
+                    </Grid>
+                </GroupBox>
 
-                </Grid>
-            </GroupBox>
+                <!-- Frissítés gomb -->
+                <Button Content="Adatok frissítése"
+                        Margin="0,10,0,0"
+                        HorizontalAlignment="Right"
+                        Width="140"
+                        Click="RefreshButton_Click"/>
 
-            <!-- Keresés / törlés ID alapján -->
-            <GroupBox Header="Keresés / törlés ID alapján" Margin="0,0,0,10">
-                <Grid Margin="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            </StackPanel>
 
-                    <TextBox x:Name="SearchUserIdTextBox"
-                             Grid.Column="0"
-                             Margin="0,0,10,0"/>
+            <!-- JOBB OLDAL -->
+            <DataGrid x:Name="UsersGrid"
+                      Grid.Column="1"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      CanUserAddRows="False"
+                      CanUserSortColumns="False"
+                      SelectionMode="Single"
+                      SelectionChanged="UsersGrid_SelectionChanged">
 
-                    <Button Content="Lekérés"
-                            Grid.Column="1"
-                            Width="90"
-                            Margin="0,0,10,0"
-                            Click="FetchUserByIdButton_Click"/>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID"
+                                        Binding="{Binding Id}"
+                                        Width="2*"/>
+                    <DataGridTextColumn Header="Név"
+                                        Binding="{Binding Name}"
+                                        Width="2*"/>
+                    <DataGridTextColumn Header="Jelszó"
+                                        Binding="{Binding Password}"
+                                        Width="2*"/>
 
-                    <Button Content="Törlés"
-                            Grid.Column="2"
-                            Width="90"
-                            Click="DeleteUserButton_Click"/>
-                </Grid>
-            </GroupBox>
+                    <DataGridTextColumn Header="Fighter"
+                                        Binding="{Binding Scores[0].HighScore}"
+                                        Width="*"/>
+                    <DataGridTextColumn Header="Memory"
+                                        Binding="{Binding Scores[1].HighScore}"
+                                        Width="*"/>
+                    <DataGridTextColumn Header="Snake"
+                                        Binding="{Binding Scores[2].HighScore}"
+                                        Width="*"/>
 
-            <!-- Új felhasználó + frissítés -->
-            <GroupBox Header="Új felhasználó létrehozása">
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <!-- név -->
-                        <RowDefinition Height="Auto"/>
-                        <!-- jelszó -->
-                        <RowDefinition Height="Auto"/>
-                        <!-- létrehozás -->
-                        <RowDefinition Height="Auto"/>
-                        <!-- frissítés -->
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <DataGridTextColumn Header="Role"
+                                        Binding="{Binding Role}"
+                                        Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
 
-                    <TextBlock Text="Név:"
-                               Grid.Row="0"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="NewUserNameTextBox"
-                             Grid.Row="0"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"/>
-
-                    <TextBlock Text="Jelszó:"
-                               Grid.Row="1"
-                               Grid.Column="0"
-                               Margin="0,0,5,5"
-                               VerticalAlignment="Center"/>
-                    <TextBox x:Name="NewUserPasswordTextBox"
-                             Grid.Row="1"
-                             Grid.Column="1"
-                             Margin="0,0,0,5"/>
-
-                    <Button Content="Létrehozás"
-                            Grid.Row="2"
-                            Grid.ColumnSpan="2"
-                            Margin="0,10,0,0"
-                            HorizontalAlignment="Right"
-                            Width="120"
-                            Click="CreateUserButton_Click"/>
-
-                </Grid>
-            </GroupBox>
-
-        <!-- ÚJ: frissítés gomb -->
-        <Button Content="Adatok frissítése"
-            Grid.Row="3"
-            Grid.ColumnSpan="2"
-            Margin="0,10,0,0"
-            HorizontalAlignment="Right"
-            Width="140"
-            Click="RefreshButton_Click"/>
-
-        </StackPanel>
-
-        <!-- JOBB OLDAL: user lista + 3 score oszlop -->
-        <DataGrid x:Name="UsersGrid"
-                  Grid.Column="1"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  CanUserAddRows="False"
-                  CanUserSortColumns="False"
-                  SelectionMode="Single"
-                  SelectionChanged="UsersGrid_SelectionChanged">
-
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="ID"
-                                    Binding="{Binding Id}"
-                                    Width="2*"/>
-                <DataGridTextColumn Header="Név"
-                                    Binding="{Binding Name}"
-                                    Width="2*"/>
-                <DataGridTextColumn Header="Jelszó"
-                                    Binding="{Binding Password}"
-                                    Width="2*"/>
-
-                <DataGridTextColumn Header="Fighter"
-                                    Binding="{Binding Scores[0].HighScore}"
-                                    Width="*"/>
-                <DataGridTextColumn Header="Memory"
-                                    Binding="{Binding Scores[1].HighScore}"
-                                    Width="*"/>
-                <DataGridTextColumn Header="Snake"
-                                    Binding="{Binding Scores[2].HighScore}"
-                                    Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
-
+        </Grid>
     </Grid>
 </Window>

@@ -18,6 +18,10 @@
         /// Ha null: a score-okat NEM módosítjuk.
         /// Ha nem null: a meglévő score-kat felülírjuk, a hiányzókat töröljük.
         /// </summary>
+        /// 
+
+        public string? Role { get; set; }
+
         public List<UserUpdateScoreAdminDto>? Scores { get; set; }
 
     }

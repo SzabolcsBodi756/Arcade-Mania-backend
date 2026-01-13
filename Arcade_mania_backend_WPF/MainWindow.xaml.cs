@@ -15,8 +15,6 @@ namespace Arcade_mania_backend_WPF
         private readonly UserApiService _apiService;
 
         private List<UserDataAdminDto> _users = new();
-
-        // aktuális kijelölt user összes score-ja (játék név szerint rendezve)
         private List<GameScoreDto> _currentScores = new();
 
         public MainWindow()
@@ -26,10 +24,66 @@ namespace Arcade_mania_backend_WPF
             Loaded += MainWindow_Loaded;
         }
 
-        // induláskor betöltjük az összes user-t, Name szerint rendezve
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await LoadUsersAsync();
+            SetAdminUiEnabled(false);
+        }
+
+        private void SetAdminUiEnabled(bool enabled)
+        {
+            AdminContentGrid.IsEnabled = enabled;
+            AdminContentGrid.Opacity = enabled ? 1.0 : 0.5;
+            LoginStatusTextBlock.Text = enabled ? "Bejelentkezve (Admin)" : "Nincs bejelentkezve";
+        }
+
+        private async void AdminLoginButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var name = AdminNameTextBox.Text?.Trim() ?? "";
+                var password = AdminPasswordBox.Password ?? "";
+
+                if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(password))
+                {
+                    LoginStatusTextBlock.Text = "Add meg a nevet és a jelszót.";
+                    return;
+                }
+
+                LoginStatusTextBlock.Text = "Bejelentkezés...";
+
+                var ok = await _apiService.AdminLoginAsync(name, password);
+
+                if (!ok)
+                {
+                    SetAdminUiEnabled(false);
+                    LoginStatusTextBlock.Text = "Sikertelen bejelentkezés.";
+                    return;
+                }
+
+                SetAdminUiEnabled(true);
+                await LoadUsersAsync();
+            }
+            catch (Exception ex)
+            {
+                SetAdminUiEnabled(false);
+                LoginStatusTextBlock.Text = $"Hiba: {ex.Message}";
+            }
+        }
+
+        private void AdminLogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            _apiService.Logout();
+
+            UsersGrid.ItemsSource = null;
+            _users = new List<UserDataAdminDto>();
+            ClearSelectedUserFields();
+
+            SearchUserIdTextBox.Text = "";
+            NewUserNameTextBox.Text = "";
+            NewUserPasswordTextBox.Text = "";
+            NewUserRoleComboBox.SelectedIndex = 0;
+
+            SetAdminUiEnabled(false);
         }
 
         private async Task LoadUsersAsync()
@@ -38,10 +92,10 @@ namespace Arcade_mania_backend_WPF
             {
                 var users = await _apiService.GetAllUsersAdminAsync();
 
-                // minden user score-jait rendezzük játék név szerint,
-                // hogy Scores[0], Scores[1], Scores[2] konzisztens legyen
                 foreach (var u in users)
                 {
+                    u.Role = string.IsNullOrWhiteSpace(u.Role) ? "User" : u.Role;
+
                     if (u.Scores != null)
                     {
                         u.Scores = u.Scores
@@ -54,7 +108,6 @@ namespace Arcade_mania_backend_WPF
                     }
                 }
 
-                // Name szerint rendezett lista
                 _users = users
                     .OrderBy(u => u.Name, StringComparer.CurrentCultureIgnoreCase)
                     .ToList();
@@ -71,7 +124,6 @@ namespace Arcade_mania_backend_WPF
             }
         }
 
-        // jobb oldali listában kijelölt user → bal oldal feltöltése
         private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (UsersGrid.SelectedItem is UserDataAdminDto user)
@@ -86,7 +138,11 @@ namespace Arcade_mania_backend_WPF
             SelectedUserNameTextBox.Text = user.Name;
             SelectedUserPasswordTextBox.Text = user.Password;
 
-            // aktuális score lista
+            // role combó
+            var role = string.IsNullOrWhiteSpace(user.Role) ? "User" : user.Role;
+            SelectedUserRoleComboBox.SelectedIndex =
+                role.Equals("Admin", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+
             _currentScores = (user.Scores ?? new List<GameScoreDto>())
                 .OrderBy(s => s.GameName, StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
@@ -95,7 +151,6 @@ namespace Arcade_mania_backend_WPF
             SetScoreField(Score2NameTextBlock, Score2TextBox, _currentScores, 1);
             SetScoreField(Score3NameTextBlock, Score3TextBox, _currentScores, 2);
 
-            // ID mezőt a keresés/törlés szekcióban is szinkronizáljuk
             SearchUserIdTextBox.Text = user.Id.ToString();
         }
 
@@ -117,7 +172,6 @@ namespace Arcade_mania_backend_WPF
             }
         }
 
-        // MENTÉS gomb: név, jelszó, score-ok mentése
         private async void SaveUserButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(SelectedUserIdTextBox.Text))
@@ -144,7 +198,8 @@ namespace Arcade_mania_backend_WPF
                 return;
             }
 
-            // score-ok frissítése a 3 textbox alapján
+            var role = (SelectedUserRoleComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "User";
+
             var updatedScores = new List<GameScoreDto>();
 
             for (int i = 0; i < _currentScores.Count; i++)
@@ -176,7 +231,6 @@ namespace Arcade_mania_backend_WPF
                 });
             }
 
-            // DTO átalakítás az API PUT-hoz
             var updateScores = updatedScores
                 .Select(s => new UserUpdateScoreAdminDto
                 {
@@ -189,6 +243,7 @@ namespace Arcade_mania_backend_WPF
             {
                 Name = name,
                 Password = password,
+                Role = role,
                 Scores = updateScores
             };
 
@@ -203,7 +258,6 @@ namespace Arcade_mania_backend_WPF
 
                 await LoadUsersAsync();
 
-                // friss betöltés után újra kijelöljük ugyanazt, ha benne van a listában
                 var updatedUser = _users.FirstOrDefault(u => u.Id == id);
                 if (updatedUser != null)
                 {
@@ -231,6 +285,8 @@ namespace Arcade_mania_backend_WPF
             SelectedUserNameTextBox.Text = string.Empty;
             SelectedUserPasswordTextBox.Text = string.Empty;
 
+            SelectedUserRoleComboBox.SelectedIndex = 0;
+
             Score1NameTextBlock.Text = string.Empty;
             Score2NameTextBlock.Text = string.Empty;
             Score3NameTextBlock.Text = string.Empty;
@@ -246,7 +302,6 @@ namespace Arcade_mania_backend_WPF
             _currentScores = new List<GameScoreDto>();
         }
 
-        // Mezők ürítése gomb: mindent töröl
         private void ClearFieldsButton_Click(object sender, RoutedEventArgs e)
         {
             UsersGrid.SelectedItem = null;
@@ -255,9 +310,9 @@ namespace Arcade_mania_backend_WPF
             SearchUserIdTextBox.Text = string.Empty;
             NewUserNameTextBox.Text = string.Empty;
             NewUserPasswordTextBox.Text = string.Empty;
+            NewUserRoleComboBox.SelectedIndex = 0;
         }
 
-        // LEKÉRÉS gomb – ID alapján (GET: api/users/admin/{id})
         private async void FetchUserByIdButton_Click(object sender, RoutedEventArgs e)
         {
             var idText = SearchUserIdTextBox.Text?.Trim() ?? string.Empty;
@@ -304,7 +359,6 @@ namespace Arcade_mania_backend_WPF
             }
         }
 
-        // TÖRLÉS gomb – ID alapján (DELETE: api/users/admin/{id})
         private async void DeleteUserButton_Click(object sender, RoutedEventArgs e)
         {
             var idText = SearchUserIdTextBox.Text?.Trim() ?? string.Empty;
@@ -368,7 +422,6 @@ namespace Arcade_mania_backend_WPF
             }
         }
 
-        // ÚJ FELHASZNÁLÓ – POST: api/users/admin
         private async void CreateUserButton_Click(object sender, RoutedEventArgs e)
         {
             var name = NewUserNameTextBox.Text?.Trim() ?? string.Empty;
@@ -381,10 +434,13 @@ namespace Arcade_mania_backend_WPF
                 return;
             }
 
+            var role = (NewUserRoleComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "User";
+
             var dto = new UserCreateAdminDto
             {
                 Name = name,
-                Password = password
+                Password = password,
+                Role = role
             };
 
             try
@@ -399,6 +455,7 @@ namespace Arcade_mania_backend_WPF
 
                 NewUserNameTextBox.Text = string.Empty;
                 NewUserPasswordTextBox.Text = string.Empty;
+                NewUserRoleComboBox.SelectedIndex = 0;
 
                 await LoadUsersAsync();
 
@@ -422,10 +479,8 @@ namespace Arcade_mania_backend_WPF
             }
         }
 
-        // ÚJ: Adatok frissítése gomb – újrahúzza a listát az API-ból
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            // megpróbáljuk megjegyezni az aktuálisan kijelölt user-t
             Guid? selectedId = null;
             if (Guid.TryParse(SelectedUserIdTextBox.Text, out var id))
             {
@@ -445,7 +500,6 @@ namespace Arcade_mania_backend_WPF
                 }
             }
 
-            // ha már nincs meg a user (közben törölték), tisztítunk
             ClearSelectedUserFields();
         }
     }
