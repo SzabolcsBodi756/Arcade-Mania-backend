@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcade_mania_backend_webAPI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcade_mania_backend_WPF", "Arcade_mania_backend_WPF\Arcade_mania_backend_WPF.csproj", "{5305254B-BB00-4831-BE6C-72D85C74D5A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "TestProject\TestProject.csproj", "{BA990424-EF8C-4B51-9D7F-F7F4F58708D3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5305254B-BB00-4831-BE6C-72D85C74D5A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5305254B-BB00-4831-BE6C-72D85C74D5A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5305254B-BB00-4831-BE6C-72D85C74D5A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA990424-EF8C-4B51-9D7F-F7F4F58708D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA990424-EF8C-4B51-9D7F-F7F4F58708D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA990424-EF8C-4B51-9D7F-F7F4F58708D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA990424-EF8C-4B51-9D7F-F7F4F58708D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

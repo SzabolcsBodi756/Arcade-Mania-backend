@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "M2DdJME9MrE=",
+  "dgSpecHash": "uKkEQ2v9Qnk=",
   "success": true,
   "projectFilePath": "C:\\Users\\szabo\\source\\repos\\Arcade_mania_backend_webAPI\\Arcade_mania_backend_webAPI\\Arcade_mania_backend_webAPI.csproj",
   "expectedPackageFiles": [
@@ -21,6 +21,7 @@
     "C:\\Users\\szabo\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.22\\microsoft.entityframeworkcore.abstractions.8.0.22.nupkg.sha512",
     "C:\\Users\\szabo\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\8.0.22\\microsoft.entityframeworkcore.analyzers.8.0.22.nupkg.sha512",
     "C:\\Users\\szabo\\.nuget\\packages\\microsoft.entityframeworkcore.design\\8.0.22\\microsoft.entityframeworkcore.design.8.0.22.nupkg.sha512",
+    "C:\\Users\\szabo\\.nuget\\packages\\microsoft.entityframeworkcore.inmemory\\8.0.22\\microsoft.entityframeworkcore.inmemory.8.0.22.nupkg.sha512",
     "C:\\Users\\szabo\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\8.0.22\\microsoft.entityframeworkcore.relational.8.0.22.nupkg.sha512",
     "C:\\Users\\szabo\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\8.0.22\\microsoft.entityframeworkcore.tools.8.0.22.nupkg.sha512",
     "C:\\Users\\szabo\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",

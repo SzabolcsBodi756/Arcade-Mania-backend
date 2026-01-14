@@ -138,3 +138,4 @@ C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_web
 C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_webAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_webAPI\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_webAPI\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\szabo\source\repos\Arcade_mania_backend_webAPI\Arcade_mania_backend_webAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.InMemory.dll
