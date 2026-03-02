@@ -12,6 +12,8 @@ namespace Arcade_mania_backend_WPF
 {
     public partial class MainWindow : Window
     {
+        public bool IsGridPasswordVisible { get; set; } = false;
+
         private readonly UserApiService _apiService;
 
         private List<UserDataAdminDto> _users = new();
@@ -501,6 +503,17 @@ namespace Arcade_mania_backend_WPF
             }
 
             ClearSelectedUserFields();
+        }
+
+        private void ToggleGridPasswordsButton_Click(object sender, RoutedEventArgs e)
+        {
+            IsGridPasswordVisible = !IsGridPasswordVisible;
+
+            ToggleGridPasswordsButton.Content = IsGridPasswordVisible
+                ? "Jelszavak elrejtése"
+                : "Jelszavak megjelenítése";
+
+            UsersGrid.Items.Refresh();
         }
     }
 }

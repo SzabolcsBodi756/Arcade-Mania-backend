@@ -45,10 +45,16 @@
                         Margin="10,0,0,0"
                         Click="AdminLogoutButton_Click"/>
 
+                <Button x:Name="ToggleGridPasswordsButton"
+                        Grid.Column="6"
+                        Margin="165,0,10,0"
+                        Click="ToggleGridPasswordsButton_Click"
+                        Content="Jelszavak megjelenítése"/>
+
                 <TextBlock x:Name="LoginStatusTextBlock"
                            Grid.Column="6"
                            VerticalAlignment="Center"
-                           Margin="15,0,0,0"
+                           Margin="15,0,165,0"
                            Foreground="Gray"
                            Text="Nincs bejelentkezve"/>
             </Grid>
@@ -312,9 +318,25 @@
                     <DataGridTextColumn Header="Név"
                                         Binding="{Binding Name}"
                                         Width="2*"/>
-                    <DataGridTextColumn Header="Jelszó"
-                                        Binding="{Binding Password}"
-                                        Width="2*"/>
+                    <DataGridTemplateColumn Header="Jelszó" Width="2*">
+
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="********"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=IsGridPasswordVisible}" Value="True">
+                                                    <Setter Property="Text" Value="{Binding Password}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
 
                     <DataGridTextColumn Header="Fighter"
                                         Binding="{Binding Scores[0].HighScore}"
