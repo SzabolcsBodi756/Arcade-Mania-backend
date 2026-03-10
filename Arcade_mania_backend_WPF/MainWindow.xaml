@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Arcade_mania_backend_WPF"
         mc:Ignorable="d"
-        Title="Arcade Mania – Admin"
+        Title="Arcade Mania – Admin panel"
         Height="600"
         Width="1100">
 
@@ -15,7 +15,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- LOGIN SÁV -->
+        <!-- Login sáv -->
         <GroupBox Header="Admin bejelentkezés" Grid.Row="0" Margin="0,0,0,10">
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
@@ -60,14 +60,14 @@
             </Grid>
         </GroupBox>
 
-        <!-- ADMIN TARTALOM (loginig tiltva) -->
+        <!-- Tartalom (alapvetően letiltva) -->
         <Grid x:Name="AdminContentGrid" Grid.Row="1" IsEnabled="False" Opacity="0.5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="3*" />
             </Grid.ColumnDefinitions>
 
-            <!-- BAL OLDAL -->
+            <!-- Bal oldal -->
             <StackPanel Grid.Column="0" Margin="0,0,10,0">
 
                 <!-- Kijelölt felhasználó adatai + role + 3 score -->

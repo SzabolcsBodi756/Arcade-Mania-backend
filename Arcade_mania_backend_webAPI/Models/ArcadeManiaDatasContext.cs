@@ -52,7 +52,6 @@ public partial class ArcadeManiaDatasContext : DbContext
                 .HasMaxLength(100)
                 .HasColumnName("user_name");
 
-            // ÚJ: role mező
             entity.Property(e => e.Role)
                 .HasMaxLength(20)
                 .HasColumnName("role")

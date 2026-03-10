@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Arcade_mania_backend_webAPI.Services;
 
 namespace Arcade_mania_backend_webAPI
 {
@@ -10,13 +11,16 @@ namespace Arcade_mania_backend_webAPI
     {
         public static void Main(string[] args)
         {
+
             var builder = WebApplication.CreateBuilder(args);
+
 
             // DbContext
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<ArcadeManiaDatasContext>(options =>
                 options.UseMySQL(connectionString!));
 
+            
             // CORS (React)
             builder.Services.AddCors(options =>
             {
@@ -28,6 +32,8 @@ namespace Arcade_mania_backend_webAPI
                         .AllowAnyMethod();
                 });
             });
+
+            builder.Services.AddScoped<IJwtService, JwtService>();
 
             // JWT Auth
             var jwt = builder.Configuration.GetSection("Jwt");
@@ -50,11 +56,13 @@ namespace Arcade_mania_backend_webAPI
                     };
                 });
 
-            // AUTHZ: role alapú védelem
+
+            // role alapú védelem
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
             });
+
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -64,18 +72,22 @@ namespace Arcade_mania_backend_webAPI
 
             if (app.Environment.IsDevelopment())
             {
+
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
             }
 
             app.UseHttpsRedirection();
+
             app.UseCors("ReactCorsPolicy");
 
-            // FONTOS SORREND:
             app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapControllers();
+
             app.Run();
         }
     }

@@ -10,11 +10,15 @@ namespace TestProject
     [TestClass]
     public class UsersController_AdminCreateMoreTests
     {
+
         [TestMethod]
         public async Task CreateUserAdmin_DuplicateName_Returns409()
         {
+
             var db = Guid.NewGuid().ToString();
+
             using var ctx = TestHelpers.CreateInMemoryContext(db);
+
             TestHelpers.SeedGames(ctx, "Snake");
 
             ctx.Users.Add(new User
@@ -24,6 +28,7 @@ namespace TestProject
                 PasswordHash = "x",
                 Role = "User"
             });
+
             await ctx.SaveChangesAsync();
 
             var controller = TestHelpers.CreateUsersController(ctx, TestHelpers.CreateTestConfig());
@@ -36,17 +41,23 @@ namespace TestProject
             });
 
             var obj = action as ObjectResult;
+
             Assert.IsNotNull(obj);
+
             Assert.AreEqual(409, obj!.StatusCode);
         }
+
 
         [TestMethod]
         public async Task CreateUserAdmin_CreatesHighScoresForAllGames()
         {
+
             var db = Guid.NewGuid().ToString();
+
             using var ctx = TestHelpers.CreateInMemoryContext(db);
 
             var games = TestHelpers.SeedGamesReturnEntities(ctx, "Snake", "Tetris", "Pacman");
+
             var controller = TestHelpers.CreateUsersController(ctx, TestHelpers.CreateTestConfig());
 
             var action = await controller.CreateUserAdmin(new UserCreateAdminDto
@@ -57,13 +68,17 @@ namespace TestProject
             });
 
             var obj = action as ObjectResult;
+
             Assert.IsNotNull(obj);
+
             Assert.AreEqual(201, obj!.StatusCode);
 
             var user = await ctx.Users.SingleAsync(u => u.UserName == "NewGuy");
+
             var scoreCount = await ctx.UserHighScores.CountAsync(s => s.UserId == user.Id);
 
             Assert.AreEqual(games.Count, scoreCount, "CreateUserAdmin-nál is kell score rekord minden játékhoz.");
+
             Assert.IsTrue(await ctx.UserHighScores.AllAsync(s => s.HighScore == 0u), "Kezdő highscore mindenhol 0.");
         }
     }

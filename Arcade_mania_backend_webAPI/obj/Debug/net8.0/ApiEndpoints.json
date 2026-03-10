@@ -27,22 +27,6 @@
   },
   {
     "ContainingType": "Arcade_mania_backend_webAPI.Controllers.UsersController",
-    "Method": "GetAdminToken",
-    "RelativePath": "api/Users/admin-token",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "body",
-        "Type": "System.Text.Json.JsonElement",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Arcade_mania_backend_webAPI.Controllers.UsersController",
     "Method": "GetUserAdminById",
     "RelativePath": "api/Users/admin/{id}",
     "HttpMethod": "GET",

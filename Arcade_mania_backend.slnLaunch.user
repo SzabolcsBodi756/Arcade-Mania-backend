@@ -9,6 +9,10 @@
       {
         "Path": "Arcade_mania_backend_WPF\\Arcade_mania_backend_WPF.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "TestProject\\TestProject.csproj",
+        "Action": "Start"
       }
     ]
   }

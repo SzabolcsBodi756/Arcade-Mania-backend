@@ -1,5 +1,6 @@
 ﻿using Arcade_mania_backend_webAPI.Controllers;
 using Arcade_mania_backend_webAPI.Models;
+using Arcade_mania_backend_webAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,10 @@ namespace TestProject.Helpers
 {
     internal static class TestHelpers
     {
+
         public static ArcadeManiaDatasContext CreateInMemoryContext(string dbName)
         {
+
             var options = new DbContextOptionsBuilder<ArcadeManiaDatasContext>()
                 .UseInMemoryDatabase(databaseName: dbName)
                 .Options;
@@ -19,27 +22,30 @@ namespace TestProject.Helpers
             return new ArcadeManiaDatasContext(options);
         }
 
+
         public static void SeedGames(ArcadeManiaDatasContext ctx, params string[] gameNames)
         {
-            // Ha nem seedelsz Game-eket, a Register/CreateAdmin nem tud HighScore rekordokat létrehozni.
+
+            // Ha nem seedelünk Game-eket, a Register/CreateAdmin nem tud HighScore rekordokat létrehozni.
             foreach (var name in gameNames)
             {
+
                 ctx.Games.Add(new Game
                 {
                     Id = Guid.NewGuid(),
                     Name = name
                 });
+
             }
+
             ctx.SaveChanges();
         }
 
+
         public static IConfiguration CreateTestConfig()
         {
-            // Ezeket a UsersController használja:
-            // Crypto:PasswordKey -> kötelező
-            // Jwt:Key/Issuer/Audience (+ ExpireMinutes opcionális)
-            // Admin:ServiceKey -> admin list/create/update/delete részekhez hasznos
 
+            // Ezeket a UsersController használja:
             var dict = new Dictionary<string, string?>
             {
                 ["Crypto:PasswordKey"] = "0123456789ABCDEF0123456789ABCDEF", // 32 chars, stabil teszthez
@@ -55,12 +61,17 @@ namespace TestProject.Helpers
                 .Build();
         }
 
+
         public static UsersController CreateUsersController(
+
             ArcadeManiaDatasContext ctx,
             IConfiguration config,
+
             Guid? authenticatedUserId = null)
         {
-            var controller = new UsersController(ctx, config);
+            var jwtService = new JwtService(config);
+
+            var controller = new UsersController(ctx, config, jwtService);
 
             // Ha kell "bejelentkezett user" (pl. /me/scores tesztekhez), beállítjuk a HttpContext.User claim-et.
             var httpContext = new DefaultHttpContext();
@@ -68,8 +79,10 @@ namespace TestProject.Helpers
             if (authenticatedUserId.HasValue)
             {
                 var claims = new[]
+
                 {
                     new Claim(ClaimTypes.NameIdentifier, authenticatedUserId.Value.ToString())
+
                 };
 
                 httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
@@ -77,39 +90,58 @@ namespace TestProject.Helpers
 
             controller.ControllerContext = new ControllerContext
             {
+
                 HttpContext = httpContext
+
             };
 
             return controller;
         }
 
+
         public static T? GetAnonymousProp<T>(object? obj, string propName)
         {
-            if (obj == null) return default;
+            if (obj == null)
+            {
+                return default;
+            }
 
             var prop = obj.GetType().GetProperty(propName);
-            if (prop == null) return default;
+
+            if (prop == null)
+            {
+                return default;
+            }
 
             var val = prop.GetValue(obj);
-            if (val is T t) return t;
+
+            if (val is T t)
+            {
+                return t;
+            }
 
             return default;
         }
 
+
         public static List<Game> SeedGamesReturnEntities(ArcadeManiaDatasContext ctx, params string[] gameNames)
         {
+
             var games = new List<Game>();
 
             foreach (var name in gameNames)
             {
+
                 var g = new Game { Id = Guid.NewGuid(), Name = name };
+
                 games.Add(g);
+
                 ctx.Games.Add(g);
             }
 
             ctx.SaveChanges();
+
             return games;
         }
-
     }
 }

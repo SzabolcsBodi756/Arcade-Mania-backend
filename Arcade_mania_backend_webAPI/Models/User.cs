@@ -11,7 +11,6 @@ public partial class User
 
     public string PasswordHash { get; set; } = null!;
 
-    // ÚJ: jogosultság (User / Admin)
     public string Role { get; set; } = "User";
 
     public virtual ICollection<UserHighScore> UserHighScores { get; set; } = new List<UserHighScore>();

@@ -5,31 +5,6 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/Users/admin-token": {
-      "post": {
-        "tags": [
-          "Users"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { }
-            },
-            "text/json": {
-              "schema": { }
-            },
-            "application/*+json": {
-              "schema": { }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/Users/register": {
       "post": {
         "tags": [
